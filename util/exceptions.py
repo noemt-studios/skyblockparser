@@ -1,0 +1,2 @@
+class SkyHelperNetworthException(Exception):
+    pass
