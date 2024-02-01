@@ -1,3 +1,6 @@
+Example Usage:
+
+```py
 from util.profile import SkyblockParser
 import requests
 
@@ -18,3 +21,4 @@ print(profile.slayer_data)
 
 profile.inventory[0].render().show()
 # Item Render
+```
