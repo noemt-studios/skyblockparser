@@ -1,0 +1,6 @@
+include util/fonts/Minecraft-Italic.otf
+include util/fonts/MinecraftBold.otf
+include util/fonts/MinecraftBoldItalic.otf
+include util/fonts/MinecraftItalic.otf
+include util/fonts/MinecraftRegular.otf
+include util/fonts/unifont.ttf
