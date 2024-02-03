@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-VERSION = '1.0.2'
+VERSION = '1.0.3'
 DESCRIPTION = 'A package allowing you to parse skyblock profile information including networth.'
 
 # Setting up
@@ -13,7 +13,7 @@ setup(
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     packages=find_packages(),
-    install_requires=['aiohttp'],
+    install_requires=['aiohttp', 'pillow'],
     keywords=['python', 'hypixel', 'skyblock', 'hypixel skyblock'],
     classifiers=[
         'Development Status :: 5 - Production/Stable',
@@ -22,5 +22,5 @@ setup(
         'License :: OSI Approved :: MIT License',
         "Programming Language :: Python :: 3",
     ],
-    package_data={'util': ['util/*']}
+    package_data={'skyblockparser': ['skyblockparser/*']}
 )

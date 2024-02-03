@@ -1,4 +1,4 @@
-# skyblockparser v1.0.2
+# skyblockparser v1.0.3
 ## This requires a [Hypixel API Key](https://developer.hypixel.net)
 
 ## Installation
@@ -10,7 +10,7 @@ Run `pip install skyblockparser` on your project folder.
 In the following example, we use the Profile class to get the stats of each member in a SkyBlock profile.
 
 ```py
-from util.profile import SkyblockParser
+from skyblockparser.profile import SkyblockParser
 import requests
 
 api_key = ""
