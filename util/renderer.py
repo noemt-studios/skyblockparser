@@ -1,3 +1,6 @@
+# Thank you Poke for the renderer
+# https://github.com/poke5352
+
 from PIL import Image, ImageDraw, ImageFont
 import os
 import string
@@ -59,6 +62,7 @@ def render(lore_lines):
         code_character = False
         bolded = False
         italics = False
+        strikethrough = False
         shadow_color = (63, 63, 63)
         color = (255, 255, 255)
         if line == "":
@@ -122,12 +126,6 @@ def render(lore_lines):
 
     img = Image.new('RGB', (width, height), color=(0, 0, 0))
     draw = ImageDraw.Draw(img)
-
-    draw.line((2, 2, 2, height-3), fill=(44, 8, 99), width=2)
-    draw.line((2, 2, width-4, 2), fill=(44, 8, 99), width=2)
-    draw.line((width-4, 2, width-4, height-4), fill=(44, 8, 99), width=2)
-    draw.line((2, height-4, width-3, height-4), fill=(44, 8, 99), width=2)
-
 
     x = 8
     line_number = 0

@@ -2,6 +2,7 @@ from .exceptions import *
 from .constants import *
 from .levels import *
 from .renderer import render
+from .pets import Pet
 import gzip
 import base64
 import struct
@@ -151,58 +152,6 @@ class Item:
     def render(self):
         return render(self.lore)
 
-
-class Pet:
-    def __init__(self, data):
-        self.uuid = data.get("uuid", "")
-        self.type = data.get("type", "")
-        self.exp = data.get("exp", 0)
-        self.active = data.get("active", False)
-        self.tier = data.get("tier", 0)
-
-        self.held_item = data.get("heldItem", "")
-        if self.held_item in rarity_upgrading_pet_items:
-            current_tier = pet_tiers.index(self.tier)
-            if current_tier == len(pet_tiers)-1:
-                self.tier = pet_tiers[current_tier]
-            else:
-                self.tier = pet_tiers[current_tier+1]
-
-        self.candy_used = data.get("candyUsed", 0)
-        self.skin = data.get("skin", "")
-
-        self.max_level = 100
-        if self.type in special_pet_levels:
-            self.max_level = special_pet_levels[self.type]
-
-        self.calculate_level()
-
-    def calculate_level(self):
-
-        if self.type == "BINGO":
-            pet_offset = 0
-        else:
-            pet_offset = rarity_offset[self.tier]
-
-        new_pet_levels = pet_levels[pet_offset:]
-        new_pet_levels = new_pet_levels[:self.max_level-1]
-
-        total_pet_xp = 0
-
-        for i in new_pet_levels:
-            total_pet_xp += i
-            if total_pet_xp >= self.exp:
-                level = new_pet_levels.index(i)+1
-                break
-        else:
-            level = 100
-            if self.type in special_pet_levels:
-                level = special_pet_levels[self.type]
-
-        self.level = level
-        self.max_xp = sum(new_pet_levels)
-
-
 class Profile:
     def __init__(self, profile_data, cute_name, uuid, api_key):
         self.profile_data_raw = profile_data
@@ -226,10 +175,10 @@ class Profile:
                     break
 
                 else:
-                    raise SkyHelperNetworthException("User not in Profile")
+                    raise SkyblockParserException("User not in Profile")
 
         else:
-            raise SkyHelperNetworthException("Profile not found")
+            raise SkyblockParserException("Profile not found")
 
         self.collections = self.profile_data_user.get("collection", {})
 
@@ -243,65 +192,53 @@ class Profile:
                 Pet(self.profile_data_user["rift"]["dead_cats"]["montezuma"]))
 
         inventory = self.profile_data_user.get("inventory", {})
+        self.sacks = inventory.get("sacks_counts", {})
 
-        inventory_contents = inventory.get("inv_contents", {})
-        inventory_data = inventory_contents.get("data", "")
-        inventory_items = decode_item(inventory_data)[""]["i"]
-        self.inventory = [Item(item) for item in inventory_items if item]
+        to_decode = [
+            "inv",
+            "ender_chest",
+            "inv_armor",
+            "wardrobe",
+            "equipment",
+            "personal_vault",
+            "backpack"
+        ]
 
-        enderchest_contents = inventory.get("ender_chest_contents", {})
-        enderchest_data = enderchest_contents.get("data", "")
-        enderchest_items = decode_item(enderchest_data)
-        self.enderchest = [Item(item) for item in enderchest_items if item]
+        for item in to_decode:
+            if item == "inv_armor":
+                self.decode_items(inventory.get(item, {}).get("data", ""), item)
 
-        armor = inventory.get("inv_armor", {})
-        armor_data = armor.get("data", "")
-        armor_items = decode_item(armor_data)[""]["i"]
-        self.armor = [Item(item) for item in armor_items if item]
+            elif item == "backpack":
+                data = inventory.get(item + "_contents", {})
+                for item in data:
+                    page_data = data[item].get("data", "")
+                    self.decode_items(page_data, f"backpack_{item}")
 
-        wardrobe = inventory.get("wardrobe_contents", {})
-        wardrobe_data = wardrobe.get("data", "")
-        wardrobe_items = decode_item(wardrobe_data)[""]["i"]
-        self.wardrobe = [Item(item) for item in wardrobe_items if item]
+            else:
+                self.decode_items(inventory.get(item + "_contents", {}).get("data", ""), item)
 
-        equipment = inventory.get("equipment_contents", {})
-        equipment_data = equipment.get("data", "")
-        equipment_items = decode_item(equipment_data)[""]["i"]
-        self.equipment = [Item(item) for item in equipment_items if item]
-
-        persoal_vault = inventory.get("personal_vault_contents", {})
-        personal_vault_data = persoal_vault.get("data", "")
-        personal_vault_items = decode_item(personal_vault_data)[""]["i"]
-        self.personal_vault = [Item(item)
-                               for item in personal_vault_items if item]
+        self.backpack_count = len([x for x in dir(self) if "backpack_" in x])
 
         bags = inventory.get("bag_contents", {})
-
-        potion_bag = bags.get("potion_bag", {})
-        potion_bag_data = potion_bag.get("data", "")
-        potion_bag_items = decode_item(potion_bag_data)[""]["i"]
-        self.potion_bag = [Item(item) for item in potion_bag_items if item]
-
-        talisman_bag = bags.get("talisman_bag", {})
-        talisman_bag_data = talisman_bag.get("data", "")
-        talisman_bag_items = decode_item(talisman_bag_data)[""]["i"]
-        self.talisman_bag = [Item(item) for item in talisman_bag_items if item]
-
-        fishing_bag = bags.get("fishing_bag", {})
-        fishing_bag_data = fishing_bag.get("data", "")
-        fishing_bag_items = decode_item(fishing_bag_data)[""]["i"]
-        self.fishing_bag = [Item(item) for item in fishing_bag_items if item]
-
-        quiver = bags.get("quiver", {})
-        quiver_data = quiver.get("data", "")
-        quiver_items = decode_item(quiver_data)[""]["i"]
-        self.quiver = [Item(item) for item in quiver_items if item]
+        for bag in bags:	
+            data = bags[bag].get("data", "")
+            self.decode_items(data, bag)
 
         asyncio.run(self.get_museum())
         asyncio.run(self.get_networth())
         self.get_dungeon_stats()
         self.get_slayer_stats()
         self.get_skill_stats()
+
+    def decode_items(self, nbt, _type):
+        items = decode_item(nbt)[""]["i"]
+        for item in items:
+            if item.get("tag", {}).get("ExtraAttributes", {}).get("id", "") == "PET":
+                self.pets.append(Pet(item["tag"], False))
+                items.remove(item)
+                continue
+
+        setattr(self, _type, [Item(item) for item in items if item])
 
     async def get_museum(self):
         if self.museum_data is None:
@@ -352,8 +289,7 @@ class Profile:
         dungeon_data = {
             "experience": experience,
             "level": level,
-            "classes": class_data,
-            "raw": self.profile_data_user.get("dungeons", {})
+            "classes": class_data
         }
         self.dungeon_data = dungeon_data
         return
@@ -402,7 +338,7 @@ class SkyblockParser:
         self.api_key = api_key
         if data.get("success") is False:
             reason = data.get("cause")
-            raise SkyHelperNetworthException(reason)
+            raise SkyblockParserException(reason)
 
     def select_profile(self, cute_name):
         return Profile(self.profiles, cute_name, self.uuid, self.api_key)

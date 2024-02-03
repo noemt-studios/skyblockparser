@@ -1,2 +1,2 @@
-class SkyHelperNetworthException(Exception):
+class SkyblockParserException(Exception):
     pass
