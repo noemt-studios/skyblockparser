@@ -2,7 +2,7 @@
 ## This requires a [Hypixel API Key](https://developer.hypixel.net)
 
 ## Installation
-Python 3.6 or higher is required.
+Python 3.7 or higher is required.
 
 Run `pip install skyblockparser` on your project folder.
 
