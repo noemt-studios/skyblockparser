@@ -1,6 +1,6 @@
-include util/fonts/Minecraft-Italic.otf
-include util/fonts/MinecraftBold.otf
-include util/fonts/MinecraftBoldItalic.otf
-include util/fonts/MinecraftItalic.otf
-include util/fonts/MinecraftRegular.otf
-include util/fonts/unifont.ttf
+include skyblockparser/fonts/Minecraft-Italic.otf
+include skyblockparser/fonts/MinecraftBold.otf
+include skyblockparser/fonts/MinecraftBoldItalic.otf
+include skyblockparser/fonts/MinecraftItalic.otf
+include skyblockparser/fonts/MinecraftRegular.otf
+include skyblockparser/fonts/unifont.ttf
