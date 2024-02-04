@@ -1,4 +1,4 @@
-# skyblockparser v1.0.4
+# skyblockparser v1.0.5
 ## This requires a [Hypixel API Key](https://developer.hypixel.net)
 
 ## Installation
@@ -59,6 +59,12 @@ dungeon_data
 slayer_data
 ```
 
+## Networth:
+```
+networth_data
+```
+
 # Note:
 - Pets do not support rendering *yet* *unless they are not from the Pet Menu #HypixelAddPetLoreToApi
 - If you want to use your own hosted api, or if mine ever goes offline, the code is in the `api` directory
+### This is in very early stages of development so do expect a few changes!
