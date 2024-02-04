@@ -59,6 +59,11 @@ dungeon_data
 slayer_data
 ```
 
+## Networth:
+```
+networth_data
+```
+
 # Note:
 - Pets do not support rendering *yet* *unless they are not from the Pet Menu #HypixelAddPetLoreToApi
 - If you want to use your own hosted api, or if mine ever goes offline, the code is in the `api` directory
