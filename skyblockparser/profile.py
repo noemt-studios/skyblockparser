@@ -179,6 +179,7 @@ class Profile:
         self.bank_balance = banking.get("balance", 0)
         self.profile_data_raw = _profile
         self.profile_id = _profile["profile_id"]
+        self.profile_type = _profile.get("game_mode", "normal")
 
         if uuid in _profile["members"]:
             self.profile_data_user = _profile["members"][uuid]
@@ -186,6 +187,8 @@ class Profile:
         else:
             raise SkyblockParserException("User not in Profile")
 
+        leveling = self.profile_data_user.get("leveling", {})
+        self.skyblock_level = leveling.get("experience", 0) / 100
 
         self.collections = self.profile_data_user.get("collection", {})
 
@@ -231,11 +234,22 @@ class Profile:
             data = bags[bag].get("data", "")
             self.decode_items(data, bag)
 
+        self.bestiary = self.profile_data_user.get("bestiary", {})
+        self.quests = self.profile_data_user.get("quests", {})
+        self.nether = self.profile_data_user.get("nether_island_player_data", {})
+
         asyncio.run(self.get_museum())
-        asyncio.run(self.get_networth())
-        self.get_dungeon_stats()
-        self.get_slayer_stats()
-        self.get_skill_stats()
+        asyncio.run(self.get_stats())
+
+    async def get_stats(self):
+        await asyncio.gather(
+            self.get_dungeon_stats(),
+            self.get_slayer_stats(),
+            self.get_skill_stats(),
+            self.get_mining_stats(),
+            self.get_general_stats(),
+            self.get_networth()
+        )
 
     def decode_items(self, nbt, _type):
         items = decode_item(nbt)[""]["i"]
@@ -268,7 +282,7 @@ class Profile:
                     data = await response.json()
                     self.networth_data = data
 
-    def get_dungeon_stats(self):
+    async def get_dungeon_stats(self):
 
         experience = self.profile_data_user.get("dungeons", {}).get(
             "dungeon_types", {}).get("catacombs", {}).get("experience", 0)
@@ -301,7 +315,7 @@ class Profile:
         self.dungeon_data = dungeon_data
         return
 
-    def get_slayer_stats(self):
+    async def get_slayer_stats(self):
         slayers = ["zombie", "spider", "wolf", "enderman", "blaze", "vampire"]
         slayer_data = {slayer: {} for slayer in slayers}
 
@@ -318,7 +332,7 @@ class Profile:
         self.slayer_data = slayer_data
         return
 
-    def get_skill_stats(self):
+    async def get_skill_stats(self):
         skills = self.profile_data_user.get("player_data", {}).get("experience", {})
         skill_data = {}
         for skill in skills:
@@ -333,6 +347,92 @@ class Profile:
         self.skill_data = skill_data
         return
     
+    async def get_mining_stats(self):
+        mining_data = self.profile_data_user.get("mining_core", {})
+        hotm_experience = mining_data.get("experience", 0)
+        hotm_level = get_hotm_level(hotm_experience)
+
+        powder = {
+            "gemstone": {
+                "available": mining_data.get("powder_gemstone", 0),
+                "total": mining_data.get("powder_gemstone", 0) + mining_data.get("powder_spent_gemstone", 0)
+
+            },
+            "mithril": {
+                "available": mining_data.get("powder_mithril", 0),
+                "total": mining_data.get("powder_mithril_total", 0) + mining_data.get("powder_spent_mithril", 0)
+            }
+        }
+
+        self.mining_data = {
+            "forge": self.profile_data_user.get("forge", {}),
+            "hotm": {
+                "experience": hotm_experience,
+                "level": hotm_level,
+                "tokens": mining_data.get("tokens_spent", 0) + mining_data.get("tokens", 0),
+                "tokens_spent": mining_data.get("tokens_spent", 0),
+                "selected_ability": mining_data.get("selected_pickaxe_ability", ""),
+                "powder": powder,
+                "crystals": mining_data.get("crystals", {})
+            }
+        }
+
+        return
+    
+    async def get_general_stats(self):
+        player_stats = self.profile_data_user.get("player_stats", {})
+
+        deaths = player_stats.get("deaths", 0)
+        kills = player_stats.get("kills", 0)
+        auctions = player_stats.get("auctions", {})
+        end_island = player_stats.get("end_island", {})
+        races = player_stats.get("races", {})
+        pets = player_stats.get("pets", {})
+        diana = player_stats.get("mythos", {})
+        rift = player_stats.get("rift", {})
+
+        winter = player_stats.get("winter", {})
+        winter["gifts"] = player_stats.get("gifts", {})
+
+        spooky_festival = player_stats.get("candy_collected", {})
+        spooky = {
+            "total": spooky_festival.get("total", 0),
+            "green_candy": spooky_festival.get("green_candy", 0),
+            "purple_candy": spooky_festival.get("purple_candy", 0),
+            "bats_spawned": player_stats.get("sppoky", {}).get("bats_spawned", {}),
+        }
+
+        damages = {
+            "highest_critical_damage": player_stats.get("highest_critical_damage", 0),
+            "highest_damage": player_stats.get("highest_damage", 0),
+        }
+
+        fishing = {
+            "items_fished": player_stats.get("items_fished", 0),
+            "shredder": player_stats.get("shredder_rod", 0),
+            "sea_creature_kills": player_stats.get("sea_creature_kills", 0),
+            "trophy_fish": self.profile_data_user.get("trophy_fish", {})
+        }
+
+        faily_souls = self.profile_data_user.get("fairy_soul", {})
+
+        self.general_stats = {
+            "deaths": deaths,
+            "kills": kills,
+            "auctions": auctions,
+            "end_island": end_island,
+            "races": races,
+            "pets": pets,
+            "diana": diana,
+            "rift": rift,
+            "winter": winter,
+            "spooky_festival": spooky,
+            "damages": damages,
+            "fishing": fishing,
+            "fairy_souls": faily_souls
+        }
+
+        return
 
 class SkyblockParser:
     """
