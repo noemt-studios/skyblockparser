@@ -67,4 +67,5 @@ networth_data
 # Note:
 - Pets do not support rendering *yet* *unless they are not from the Pet Menu #HypixelAddPetLoreToApi
 - If you want to use your own hosted api, or if mine ever goes offline, the code is in the `api` directory
+- If the user is not in a profile with the given profile name, it will return the selected one.
 ### This is in very early stages of development so do expect a few changes!
