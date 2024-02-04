@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "skyblockparser"
-version = "1.0.4"
+version = "1.0.5"
 authors = [
   { name="nom", email="noemtdev@gmail.com" },
 ]
@@ -17,6 +17,7 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 keywords=['python', 'hypixel', 'skyblock', 'hypixel skyblock']
+dependencies = ['aiohttp', 'pillow']
 
 [project.urls]
 "Homepage" = "https://github.com/noemtdev/skyblockparser"

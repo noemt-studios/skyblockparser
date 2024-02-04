@@ -9,7 +9,6 @@ import struct
 import asyncio
 import aiohttp
 
-
 def TAG_End(b):
     return None, b
 
@@ -164,21 +163,29 @@ class Profile:
         self.api_key = api_key
 
         for profile in profile_data["profiles"]:
+
             if profile["cute_name"] == cute_name:
-                banking = profile.get("banking", {})
-                self.bank_balance = banking.get("balance", 0)
-                self.profile_data_raw = profile
-                self.profile_id = profile["profile_id"]
-
-                if uuid in profile["members"]:
-                    self.profile_data_user = profile["members"][uuid]
-                    break
-
-                else:
-                    raise SkyblockParserException("User not in Profile")
+                _profile = profile
 
         else:
-            raise SkyblockParserException("Profile not found")
+            for profile in profile_data["profiles"]:
+                if profile["selected"] is True:
+                    _profile = profile
+                    self.cute_name = profile["cute_name"]
+                    break
+
+
+        banking = _profile.get("banking", {})
+        self.bank_balance = banking.get("balance", 0)
+        self.profile_data_raw = _profile
+        self.profile_id = _profile["profile_id"]
+
+        if uuid in _profile["members"]:
+            self.profile_data_user = _profile["members"][uuid]
+
+        else:
+            raise SkyblockParserException("User not in Profile")
+
 
         self.collections = self.profile_data_user.get("collection", {})
 
@@ -336,6 +343,7 @@ class SkyblockParser:
         self.profiles = data
         self.uuid = uuid
         self.api_key = api_key
+
         if data.get("success") is False:
             reason = data.get("cause")
             raise SkyblockParserException(reason)
