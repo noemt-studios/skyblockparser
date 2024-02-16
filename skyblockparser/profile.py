@@ -238,8 +238,10 @@ class Profile:
         self.quests = self.profile_data_user.get("quests", {})
         self.nether = self.profile_data_user.get("nether_island_player_data", {})
 
-        asyncio.run(self.get_museum())
-        asyncio.run(self.get_stats())
+
+    async def init(self):
+        await self.get_museum()
+        await self.get_stats()
 
     async def get_stats(self):
         await asyncio.gather(
@@ -250,6 +252,7 @@ class Profile:
             self.get_general_stats(),
             self.get_networth()
         )
+        return 0
 
     def decode_items(self, nbt, _type):
         items = decode_item(nbt)[""]["i"]
@@ -268,6 +271,8 @@ class Profile:
                 async with session.get(url) as response:
                     data = await response.json()
                     self.museum_data = data["members"][self.uuid]
+
+        return 0
 
     async def get_networth(self):
         if self.networth_data is None:
@@ -336,6 +341,8 @@ class Profile:
         skills = self.profile_data_user.get("player_data", {}).get("experience", {})
         skill_data = {}
         for skill in skills:
+            if skill == "SKILL_DUNGEONEERING":
+                continue
             formatted_skill_string = skill.replace("SKILL_", "").lower()
             exp = skills[skill]
             level = get_skill_lvl(formatted_skill_string, exp)
@@ -450,3 +457,6 @@ class SkyblockParser:
 
     def select_profile(self, cute_name):
         return Profile(self.profiles, cute_name, self.uuid, self.api_key)
+    
+    def get_profiles(self):
+        return [x["cute_name"] for x in self.profiles["profiles"]]

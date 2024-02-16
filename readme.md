@@ -1,4 +1,4 @@
-# skyblockparser v1.1
+# skyblockparser v1.1.3
 ## This requires a [Hypixel API Key](https://developer.hypixel.net)
 
 ## Installation
@@ -21,7 +21,9 @@ url = f"https://api.hypixel.net/v2/skyblock/profiles?key={api_key}&uuid={uuid}"
 response = requests.get(url).json()
 
 player = SkyblockParser(response, uuid, api_key)
+print(player.get_profiles()) # ['Apple', 'Tomato', 'Pineapple', 'Zucchini', 'Coconut', 'Pomegranate']
 profile = player.select_profile("selected") # Selected Profile of Refraction
+await profile.init()
 # This supports Profile Names too!
 
 print(profile.skill_data)
