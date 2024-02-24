@@ -270,7 +270,7 @@ class Profile:
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
                 data = await response.json()
-                self.museum_data = data["members"][self.uuid]
+                self.museum_data = data["members"].get(self.uuid, {})
 
 
     async def get_networth(self):
