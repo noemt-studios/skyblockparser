@@ -159,13 +159,14 @@ class Profile:
         self.uuid = uuid
         self.networth_data = None
         self.bank_balance = 0
-        self.museum_data = 0
+        self.museum_data = {}
         self.api_key = api_key
 
         for profile in profile_data["profiles"]:
 
             if profile["cute_name"] == cute_name:
                 _profile = profile
+                break
 
         else:
             for profile in profile_data["profiles"]:
@@ -252,27 +253,25 @@ class Profile:
             self.get_general_stats(),
             self.get_networth()
         )
-        return 0
 
     def decode_items(self, nbt, _type):
-        items = decode_item(nbt)[""]["i"]
-        for item in items:
-            if item.get("tag", {}).get("ExtraAttributes", {}).get("id", "") == "PET":
-                self.pets.append(Pet(item["tag"], False))
-                items.remove(item)
-                continue
+        if nbt:
+            items = decode_item(nbt)[""]["i"]
+            for item in items:
+                if item.get("tag", {}).get("ExtraAttributes", {}).get("id", "") == "PET":
+                    self.pets.append(Pet(item["tag"], False))
+                    items.remove(item)
+                    continue
 
-        setattr(self, _type, [Item(item) for item in items if item])
+            setattr(self, _type, [Item(item) for item in items if item])
 
     async def get_museum(self):
-        if self.museum_data is None:
-            url = f"https://api.hypixel.net/v2/skyblock/museum?key={self.api_key}&profile={self.profile_id}"
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url) as response:
-                    data = await response.json()
-                    self.museum_data = data["members"][self.uuid]
+        url = f"https://api.hypixel.net/v2/skyblock/museum?key={self.api_key}&profile={self.profile_id}"
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as response:
+                data = await response.json()
+                self.museum_data = data["members"][self.uuid]
 
-        return 0
 
     async def get_networth(self):
         if self.networth_data is None:
