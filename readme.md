@@ -6,6 +6,9 @@ Python 3.7 or higher is required.
 
 Run `pip install skyblockparser`.
 
+## An Example bot can be found here:
+[Example Bot](https://github.com/noemtdev/skyblockparser-example)
+
 ## Usage for Parsing Profiles
 In the following example, we use the Profile class to get the stats of each member in a SkyBlock profile.
 
