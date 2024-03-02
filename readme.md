@@ -1,4 +1,4 @@
-# skyblockparser v1.1.5
+# skyblockparser v1.1.6
 ## This requires a [Hypixel API Key](https://developer.hypixel.net)
 
 ## Installation

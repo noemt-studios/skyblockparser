@@ -323,15 +323,17 @@ class Profile:
         slayers = ["zombie", "spider", "wolf", "enderman", "blaze", "vampire"]
         slayer_data = {slayer: {} for slayer in slayers}
 
+        slayer_api_response = self.profile_data_user.get("slayer", {})
+
         for slayer in slayers:
-            _slayer = self.profile_data_user.get(
+            _slayer = slayer_api_response.get(
                 "slayer_bosses", {}).get(slayer, {})
             experience = _slayer.get("xp", 0)
             level = get_slayer_level(slayer, experience)
             slayer_data[slayer]["experience"] = experience
             slayer_data[slayer]["level"] = level
 
-        slayer_data["raw"] = self.profile_data_user.get("slayer_bosses", {})
+        slayer_data["raw"] = slayer_api_response.get("slayer_bosses", {})
 
         self.slayer_data = slayer_data
         return
