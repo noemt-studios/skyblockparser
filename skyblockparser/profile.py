@@ -192,7 +192,12 @@ class Profile:
         self.skyblock_level = leveling.get("experience", 0) / 100
 
         self.collections = self.profile_data_user.get("collection", {})
+        self.bestiary = self.profile_data_user.get("bestiary", {})
+        self.quests = self.profile_data_user.get("quests", {})
+        self.nether = self.profile_data_user.get("nether_island_player_data", {})
 
+
+    def get_items(self):
         self.pets = []
         pet_data = self.profile_data_user.get("pets_data", [])
         for pet in pet_data.get("pets", []):
@@ -234,11 +239,6 @@ class Profile:
         for bag in bags:	
             data = bags[bag].get("data", "")
             self.decode_items(data, bag)
-
-        self.bestiary = self.profile_data_user.get("bestiary", {})
-        self.quests = self.profile_data_user.get("quests", {})
-        self.nether = self.profile_data_user.get("nether_island_player_data", {})
-
 
     async def init(self):
         await self.get_museum()

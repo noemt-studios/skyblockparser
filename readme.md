@@ -1,4 +1,4 @@
-# skyblockparser v1.1.6
+# skyblockparser v1.1.7
 ## This requires a [Hypixel API Key](https://developer.hypixel.net)
 
 ## Installation
@@ -27,6 +27,7 @@ player = SkyblockParser(response, uuid, api_key)
 print(player.get_profiles()) # ['Apple', 'Tomato', 'Pineapple', 'Zucchini', 'Coconut', 'Pomegranate']
 profile = player.select_profile("selected") # Selected Profile of Refraction
 await profile.init()
+profile.get_items()
 # This supports Profile Names too!
 
 print(profile.skill_data)
