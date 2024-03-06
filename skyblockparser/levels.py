@@ -113,10 +113,10 @@ def get_slayer_level(slayer_type, exp):
     for level in levels:
         try:
             if exp >= levels["9"]:
-                return levels["9"]
+                return 9
         except:
             if exp >= levels["5"]:
-                return levels["5"]
+                return 5
 
         if levels.get(level) > exp:
             lowexp = levels[str(int(level) - 1)]
