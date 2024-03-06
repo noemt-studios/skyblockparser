@@ -1,3 +1,20 @@
+Metadata-Version: 2.1
+Name: skyblockparser
+Version: 1.1.8
+Summary: A package allowing you to parse skyblock profile information including networth.
+Author: nom
+Author-email: nom <noemtdev@gmail.com>
+Project-URL: Homepage, https://github.com/noemtdev/skyblockparser
+Project-URL: Bug Tracker, https://github.com/noemtdev/skyblockparser/issues
+Keywords: python,hypixel,skyblock,hypixel skyblock
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+Requires-Dist: aiohttp
+Requires-Dist: pillow
+
 # skyblockparser v1.1.8
 ## This requires a [Hypixel API Key](https://developer.hypixel.net)
 
