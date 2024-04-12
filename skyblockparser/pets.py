@@ -1,7 +1,6 @@
 from .constants import *
 from .exceptions import SkyblockParserException
 from .renderer import render
-import json
 
 def format_stat(stat):
     formatted_stat = "{:.2f}".format(stat).rstrip('0').rstrip('.')
@@ -27,11 +26,6 @@ class Pet:
         self.active = False
 
         if not menu:
-
-            extra_attributes = data.get("ExtraAttributes", {})
-            self.uuid = extra_attributes.get("uuid", "")
-            self.active = False
-
             
             item_name = data.get("display", {}).get("Name", "")
             item_lore = data.get("display", {}).get("Lore", [])
@@ -43,8 +37,6 @@ class Pet:
                 line = line.replace("§", "&")
                 self.lore.append(line)
 
-            data = json.loads(extra_attributes.get("petInfo", "{}"))
-            
 
         if self.uuid is None:
             self.uuid = data.get("uuid", "")
@@ -57,8 +49,9 @@ class Pet:
 
         self.tier = data.get("tier", 0)
         self.rarity_color = rarity_colors.get(self.tier, "")
+
         if self.rarity_color == "":
-            raise SkyblockParserException("Unknown rarity")
+            raise SkyblockParserException(f"Unknown rarity, '{self.tier}'")
 
 
         self.held_item = data.get("heldItem", "")

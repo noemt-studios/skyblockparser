@@ -175,6 +175,12 @@ class Profile:
                     self.cute_name = profile["cute_name"]
                     break
 
+        self._profile = _profile
+
+        self.coops:list[str] = [member for member in _profile["members"]]
+        self.coop_names:list[str] = []
+
+        self.selected = _profile["selected"]
 
         banking = _profile.get("banking", {})
         self.bank_balance = banking.get("balance", 0)
@@ -187,6 +193,11 @@ class Profile:
 
         else:
             raise SkyblockParserException("User not in Profile")
+        
+        try:
+            self.created_at = _profile["created_at"]
+        except:
+            self.created_at = self.profile_data_user["profile"]["first_join"]
 
         leveling = self.profile_data_user.get("leveling", {})
         self.skyblock_level = leveling.get("experience", 0) / 100
@@ -196,16 +207,87 @@ class Profile:
         self.quests = self.profile_data_user.get("quests", {})
         self.nether = self.profile_data_user.get("nether_island_player_data", {})
 
+        self.rift:dict = self.profile_data_user.get("rift", {})
+        self.rift.pop("inventory", None)
 
-    def get_items(self):
+        self.currencies = self.profile_data_user.get("currencies", {})
+        self.player_data = self.profile_data_user.get("player_data", {})
+        self.get_pets()
+
+    async def get_json(self):
+        await self.get_coop_names()
+        await self.init()
+        await self.get_networth()
+
+        data = {
+            "profile_id": self.profile_id,
+            "uuid": self.uuid,
+            "cute_name": self.cute_name,
+            "profile_type": self.profile_type,
+            "bank_balance": self.bank_balance,
+            "created_at": self.created_at,
+            "skyblock_level": self.skyblock_level,
+            "collections": self.collections,
+            "bestiary": self.bestiary,
+            "nether": self.nether,
+            "currencies": self.currencies,
+            "networth": self.networth_data,
+            "dungeons": self.dungeon_data,
+            "slayers": self.slayer_data,
+            "skills": self.skill_data,
+            "mining": self.mining_data,
+            "general": self.general_stats,
+            "farming": self.farming_data,
+            "coop_names": self.coop_names,
+            "coop_count": len(self.coops),
+            "rift": self.rift,
+        }
+
+
+        return data
+
+    async def get_coop_names(self):
+        if self.coop_names != []:
+            return
+        
+        names = []
+        async with aiohttp.ClientSession() as session:
+            for member in self.coops:
+                user_data = self._profile["members"].get(member, {})
+                profile = user_data.get("profile", {})
+                deletion_notice = profile.get("deletion_notice", None)
+                wavy = ""
+                if deletion_notice:
+                    wavy = "~~"
+                    
+                async with session.get(f"https://sessionserver.mojang.com/session/minecraft/profile/{member}") as response:
+                    data = await response.json()
+                    username = data.get("name")
+                    if username:
+                        names.append(f"**{wavy}{username}{wavy}**")
+                    else:
+                        names.append("**-**")
+
+        self.coop_names = names
+
+
+    def get_pets(self):
         self.pets = []
-        pet_data = self.profile_data_user.get("pets_data", [])
+        pet_data = self.profile_data_user.get("pets_data", {})
         for pet in pet_data.get("pets", []):
-            self.pets.append(Pet(pet))
+            try:
+                self.pets.append(Pet(pet, False))
+            except SkyblockParserException:
+                continue
 
         if self.profile_data_user.get("rift", {}).get("dead_cats", {}).get("montezuma"):
-            self.pets.append(
-                Pet(self.profile_data_user["rift"]["dead_cats"]["montezuma"]))
+            try:
+                self.pets.append(
+                    Pet(self.profile_data_user["rift"]["dead_cats"]["montezuma"], False))
+            except SkyblockParserException:
+                pass
+
+    def get_items(self):
 
         inventory = self.profile_data_user.get("inventory", {})
         self.sacks = inventory.get("sacks_counts", {})
@@ -241,6 +323,9 @@ class Profile:
             self.decode_items(data, bag)
 
     async def init(self):
+        if self.museum_data != {}:
+            return
+        
         await self.get_museum()
         await self.get_stats()
 
@@ -251,7 +336,8 @@ class Profile:
             self.get_skill_stats(),
             self.get_mining_stats(),
             self.get_general_stats(),
-            self.get_networth()
+            self.get_networth(),
+            self.get_farming()
         )
 
     def decode_items(self, nbt, _type):
@@ -275,7 +361,7 @@ class Profile:
 
     async def get_networth(self):
         if self.networth_data is None:
-            url = "https://nw-api.noms.tech/networth"
+            url = "https://nw-api.noemt.dev/networth"
             body = {
                 "profile": self.profile_data_user,
                 "bank": self.bank_balance,
@@ -357,6 +443,7 @@ class Profile:
     
     async def get_mining_stats(self):
         mining_data = self.profile_data_user.get("mining_core", {})
+        nodes = mining_data.get("nodes", {})
         hotm_experience = mining_data.get("experience", 0)
         hotm_level = get_hotm_level(hotm_experience)
 
@@ -364,11 +451,14 @@ class Profile:
             "gemstone": {
                 "available": mining_data.get("powder_gemstone", 0),
                 "total": mining_data.get("powder_gemstone", 0) + mining_data.get("powder_spent_gemstone", 0)
-
             },
             "mithril": {
                 "available": mining_data.get("powder_mithril", 0),
                 "total": mining_data.get("powder_mithril_total", 0) + mining_data.get("powder_spent_mithril", 0)
+            },
+            "glacite": {
+                "available": mining_data.get("powder_glacite", 0),
+                "total": mining_data.get("powder_glacite_total", 0) + mining_data.get("powder_spent_glacite", 0)
             }
         }
 
@@ -381,7 +471,8 @@ class Profile:
                 "tokens_spent": mining_data.get("tokens_spent", 0),
                 "selected_ability": mining_data.get("selected_pickaxe_ability", ""),
                 "powder": powder,
-                "crystals": mining_data.get("crystals", {})
+                "crystals": mining_data.get("crystals", {}),
+                "nodes": nodes
             }
         }
 
@@ -441,6 +532,28 @@ class Profile:
         }
 
         return
+    
+    async def get_farming(self):
+        jacobs_contests = self.profile_data_user.get("jacobs_contest", {})
+        unique_brackets = jacobs_contests.get("unique_brackets", {})
+        perks = jacobs_contests.get("perks", {})
+        medals_inv = jacobs_contests.get("medals_inv", {})
+        contests = jacobs_contests.get("contests", {})
+
+        quests = self.profile_data_user.get("quests", {})
+        trapper = quests.get("trapper_quest", {})
+        pelt_count = trapper.get("pelt_count", 0)
+
+
+        farming_data = {
+            "perks": perks,
+            "unique_brackets": unique_brackets,
+            "medals": medals_inv,
+            "contests": contests,
+            "pelts": pelt_count
+        }
+
+        self.farming_data = farming_data
 
 class SkyblockParser:
     """

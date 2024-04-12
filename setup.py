@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-VERSION = '1.1.9'
+VERSION = '2.0'
 DESCRIPTION = 'A package allowing you to parse skyblock profile information including networth.'
 
 # Setting up
