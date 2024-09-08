@@ -212,6 +212,7 @@ class Profile:
 
         self.currencies = self.profile_data_user.get("currencies", {})
         self.player_data = self.profile_data_user.get("player_data", {})
+        self.events = self.profile_data_user.get("events", {})
         self.get_pets()
 
     async def get_json(self):
@@ -241,6 +242,7 @@ class Profile:
             "coop_names": self.coop_names,
             "coop_count": len(self.coops),
             "rift": self.rift,
+            "events": self.events
         }
 
 
@@ -342,7 +344,12 @@ class Profile:
 
     def decode_items(self, nbt, _type):
         if nbt:
-            items = decode_item(nbt)[""]["i"]
+            try:
+                items = decode_item(nbt)[""]["i"]
+            except:
+                setattr(self, _type, [])
+                return
+
             for item in items:
                 if item.get("tag", {}).get("ExtraAttributes", {}).get("id", "") == "PET":
                     self.pets.append(Pet(item["tag"], False))
@@ -350,6 +357,7 @@ class Profile:
                     continue
 
             setattr(self, _type, [Item(item) for item in items if item])
+            setattr(self, f"{_type}_raw", items)
 
     async def get_museum(self):
         url = f"https://api.hypixel.net/v2/skyblock/museum?key={self.api_key}&profile={self.profile_id}"

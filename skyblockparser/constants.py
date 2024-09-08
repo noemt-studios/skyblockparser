@@ -1255,5 +1255,5 @@ ignores_tierboost = [pet for pet in PET_DATA if PET_DATA[pet].get("ignoresTierBo
 
 
 special_pet_levels = {"GOLDEN_DRAGON": 200}
-rarity_offset = {"COMMON": 0, "UNCOMMON": 6, "RARE": 11, "EPIC": 16, "LEGENDARY": 20, "MYTHIC": 20}
+rarity_offset = {"COMMON": 0, "UNCOMMON": 6, "RARE": 11, "EPIC": 16, "LEGENDARY": 20, "MYTHIC": 20, 0: 0, 6: 6, 11: 11, 16: 16, 20: 20}
 pet_tiers = ["COMMON", "UNCOMMON", "RARE", "EPIC", "LEGENDARY", "MYTHIC"]

@@ -51,7 +51,7 @@ class Pet:
         self.rarity_color = rarity_colors.get(self.tier, "")
 
         if self.rarity_color == "":
-            raise SkyblockParserException(f"Unknown rarity, '{self.tier}'")
+            pass
 
 
         self.held_item = data.get("heldItem", "")
